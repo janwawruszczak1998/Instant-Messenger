@@ -23,12 +23,12 @@ In two separate terminal windows run client and server on the same port
 Terminal 1:
 
 ```bash
-./ClientMessenger 2137
+./ServerMessenger 2137
 ```
 
 Terminal 2:
 
 ```bash
-./ServerMessenger 2137
+./ClientMessenger 2137
 ```
 
