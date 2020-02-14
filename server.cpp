@@ -7,10 +7,6 @@
 #include<boost/bind.hpp>
 #include<boost/shared_ptr.hpp>
 #include<boost/enable_shared_from_this.hpp>
-#include"Message.hpp"
-#include"ChatRoom.hpp"
-#include"ChatParticipant.hpp"
-
 
 using namespace boost::asio;   
 // Driver program for receiving data from buffer 
