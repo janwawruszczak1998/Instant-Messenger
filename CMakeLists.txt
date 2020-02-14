@@ -8,7 +8,7 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CSS_EXTENSION OFF)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -pthread")
 find_package(Boost 1.65.1 REQUIRED COMPONENTS 
 	date_time
 	system

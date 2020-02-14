@@ -1,133 +1,82 @@
 #include<ctime>
 #include<iostream>
 #include<string>
+#include<list>
+#include<queue>
 #include<boost/asio.hpp>
 #include<boost/bind.hpp>
 #include<boost/shared_ptr.hpp>
 #include<boost/enable_shared_from_this.hpp>
+#include"Message.hpp"
+#include"ChatRoom.hpp"
+#include"ChatParticipant.hpp"
 
-using namespace boost::asio;
 
-
-//message about daytime
-std::string make_daytime_string(){
-    std::time_t now = std::time(0);
-    return std::ctime(&now);
-}
-
-class ConnectionHandler : public boost::enable_shared_from_this<ConnectionHandler>{
-private:
-    ip::tcp::socket socket_;
-    std::string message_ = "Hello there!\n";
-    char data[256];
-
-    ConnectionHandler(io_service& io_service)
-    :socket_(io_service)
-    {
-    }
-
-public:
-    typedef boost::shared_ptr<ConnectionHandler> pointer;
-
-    //creating new pointer of this class - factory
-    //need to be static - creating this in server constructor
-    static pointer create_pointer(io_service& io_service){
-        return pointer(new ConnectionHandler(io_service));
-    }
-
-    ip::tcp::socket& get_socket(){
-        return socket_;
-    }
-    
-    void start(){
+using namespace boost::asio;   
+// Driver program for receiving data from buffer 
+std::string getData(ip::tcp::socket& socket) 
+{ 
+    streambuf buf; 
+    read_until(socket, buf, "\n"); 
+    std::string data = buffer_cast<const char*>(buf.data()); 
+    return data; 
+} 
+  
+// Driver program to send data 
+void sendData(ip::tcp::socket& socket, const std::string& message) 
+{ 
+    write(socket, 
+          buffer(message + "\n")); 
+} 
+  
+int main(int argc, char* argv[]) 
+{ 
+    io_service io_service; 
+  
+    // Listening for any new incomming connection 
+    // at port 8080 with IPv4 protocol 
+    ip::tcp::endpoint endpoint(ip::tcp::v4(), atoi(argv[1]));
+    ip::tcp::acceptor acceptor_server( 
+        io_service, endpoint); 
+  
+    // Creating socket object 
+    ip::tcp::socket server_socket(io_service); 
+  
+    // waiting for connection 
+    acceptor_server.accept(server_socket); 
+  
+    // Reading username 
+    std::string u_name = getData(server_socket); 
+    // Removing "\n" from the username 
+    u_name.pop_back(); 
+  
+    // Replying with default mesage to initiate chat 
+    std::string response, reply; 
+    reply = "Hello there!";
+    sendData(server_socket, reply); 
+  
+    while (true) { 
+  
+        // Fetching response 
+        response = getData(server_socket); 
+  
+        // Popping last character "\n" 
+        response.pop_back(); 
+  
+        // Validating if the connection has to be closed 
+        if (response == "exit") { 
+            std::cout << "User left!" << std::endl; 
+            break; 
+        } 
+        std::cout << ": " << response << std::endl; 
+  
+        // Reading new message from input stream 
         
-        //reading
-        socket_.async_read_some(buffer(data, 256),
-            boost::bind(&ConnectionHandler::handle_read, 
-                shared_from_this(),
-                placeholders::error,
-                placeholders::bytes_transferred
-        ));
-        
-        //writing
-        socket_.async_write_some(buffer(message_, 256),
-            boost::bind(&ConnectionHandler::handle_write, 
-                shared_from_this(),
-                placeholders::error,
-                placeholders::bytes_transferred
-        ));
-        
-    }
-
-    void handle_read(const boost::system::error_code& error,
-                    size_t bytes_transferred){
-        if(!error){
-            std::cout << data << std::endl;
-        }
-        else{
-            std::cerr << "error" << error.message() << std::endl;
-            socket_.close();
-        }
-    }
-
-    void handle_write(const boost::system::error_code& error,
-                    size_t bytes_transferred){
-        if(error){
-            std::cerr << "error" << error.message() << std::endl;
-            socket_.close();
-        }
-        else{
-            std::cout << "Helo from server" << std::endl;
-        }
-    }
-};
-
-
-class Server{
-private:
-    ip::tcp::acceptor acceptor_;
-
-    void accept(){
-        //create a socket and initiates async accept operations
-        ConnectionHandler::pointer connection 
-            = ConnectionHandler::create_pointer(acceptor_.get_io_service());
-        
-        
-        //accept operation and wait
-        acceptor_.async_accept(connection->get_socket(),
-            boost::bind(&Server::handle_accept, this, connection,
-            placeholders::error));
-            
-    }
-
-public:
-    Server(io_service& io_service)
-    : acceptor_(io_service, ip::tcp::endpoint(ip::tcp::v4(), 8080))
-    {
-        accept();
-    }
-
-    void handle_accept(ConnectionHandler::pointer connection, 
-        const boost::system::error_code& error
-        ){
-
-        if(!error){
-            connection->start();
-        }
-        accept();
-
-    }
-};
-
-int main(){
-    try{
-        io_service io_service;
-        Server server(io_service);
-        io_service.run();
-    }
-    catch(std::exception exception){
-        std::cerr << exception.what() << std::endl;
-    }
-
-    return 0;
-}
+        getline(std::cin, reply); 
+        sendData(server_socket, reply); 
+  
+        if (reply == "exit") 
+            break; 
+    } 
+    return 0; 
+} 

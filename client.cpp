@@ -10,48 +10,62 @@
 
 using namespace boost::asio;
 
-int main(int argc, char* argv[])
-{
-    try{
-        if(argc != 2){
-            std::cerr << "./ClientMessenger <number of port>" << std::endl;
-            return 1;
-        }
-    std::cout << "running\n";
-        //using asio need to have at least one io_service
-        boost::asio::io_service io_service;
-        //need to turn server name into tcp endpoint
-        ip::tcp::resolver resolver(io_service);
-        //resolver takes a query ant turns it into a list of endpoints
-        ip::tcp::resolver::query query(argv[1], "daytime");
-        //list of endpoints is returned using iterator
-        ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
-    std::cout << "running2\n";
-        //create and connect socket
-        ip::tcp::socket socket(io_service);
-        socket.connect(ip::tcp::endpoint(ip::address::from_string("127.0.0.1"), atoi(argv[1])));
-    std::cout << "running3\n";
-        //boost::array can be used to store recived data
-        while(true){
-            boost::array<char, 128> buff;
-            boost::system::error_code err;
-
-            //len of array and eventually error
-            size_t len = socket.read_some(buffer(buff), err);
-
-            if(err == error::eof){
-                continue;
-            }
-            else if(err){
-                throw boost::system::system_error(err); //someting happended
-            }
-            std::cout.write(buff.data(), len);
-        }
-        std::cout << "running4\n";
-    }
-    catch(std::exception exception){
-            std::cerr << exception.what() << std::endl;
-    }
-
-    return 0;
-}
+  
+std::string getData(ip::tcp::socket& socket) 
+{ 
+    streambuf buf; 
+    read_until(socket, buf, "\n"); 
+    std::string data = buffer_cast<const char*>(buf.data()); 
+    return data; 
+} 
+  
+void sendData(ip::tcp::socket& socket, const std::string& message) 
+{ 
+    write(socket, 
+          buffer(message + "\n")); 
+} 
+  
+int main(int argc, char* argv[]) 
+{ 
+    io_service io_service; 
+    // socket creation 
+    ip::tcp::socket client_socket(io_service); 
+  
+    client_socket 
+        .connect( 
+            ip::tcp::endpoint( 
+                ip::address::from_string("127.0.0.1"), 
+                atoi(argv[1]))); 
+  
+    // Getting username from user 
+    std::string reply = "Hi!", response; 
+  
+    // Sending username to another end 
+    // to initiate the conversation 
+    sendData(client_socket, reply); 
+  
+    // Infinite loop for chit-chat 
+    while (true) { 
+  
+        // Fetching response 
+        response = getData(client_socket); 
+  
+        // Popping last character "\n" 
+        response.pop_back(); 
+  
+        // Validating if the connection has to be closed 
+        if (response == "exit") { 
+            std::cout << "Connection terminated" << std::endl; 
+            break; 
+        } 
+        std::cout << ": " << response << std::endl; 
+  
+        // Reading new message from input stream 
+        getline(std::cin, reply); 
+        sendData(client_socket, reply); 
+  
+        if (reply == "exit") 
+            break; 
+    } 
+    return 0; 
+} 
