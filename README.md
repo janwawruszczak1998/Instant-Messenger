@@ -3,8 +3,8 @@
 Install necessary packages
 
 ```bash
-sudo apt-get install libboost-dev -y
-sudo snap install cmake --classic -y
+sudo apt-get -y install libboost-dev
+sudo apt-get -y install cmake-qt-gui
 ```
 
 Clone repository, build and make
