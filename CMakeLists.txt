@@ -13,6 +13,7 @@ find_package(Boost 1.65.1 REQUIRED COMPONENTS
 	date_time
 	system
 	thread
+	chrono
 )
 
 if(Boost_FOUND)
