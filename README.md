@@ -1,4 +1,4 @@
-### How to run program
+### How to run program on Ubuntu 18.04 / 19.10
 
 Install necessary packages
 
