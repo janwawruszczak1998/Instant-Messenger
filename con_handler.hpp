@@ -1,7 +1,6 @@
 #ifndef CON_HANDLER_INCLUDE
 #define CON_HANDLER_INCLUDE
 
-
 #include <iostream>
 #include <stdlib.h>
 #include <iterator>
@@ -9,6 +8,7 @@
 #include <thread>
 
 #include <boost/asio.hpp>
+
 
 using namespace boost::asio;
 

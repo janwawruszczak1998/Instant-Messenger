@@ -7,11 +7,11 @@
 
 #include "con_handler.hpp"
 
-
 using namespace boost::asio;
 
 int main(int argc, char* argv[])
 {
+    // program requires 2 arguments
     if(argc != 2){
         std::cout << "Usage `./Server some_number`" << std::endl;
         return 0;
