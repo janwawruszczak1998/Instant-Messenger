@@ -4,11 +4,6 @@
 #include <algorithm>
 
 #include <boost/asio.hpp>
-#include <boost/array.hpp>
-#include <boost/bind.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/thread/thread.hpp>
-#include <boost/chrono.hpp>
 
 #include "con_handler.hpp"
 
@@ -17,28 +12,31 @@ using namespace boost::asio;
 
 int main(int argc, char* argv[])
 {
-    io_service io_serv; 
-    
-    // listening for any new incomming connection at port with IPv4 protocol 
-    ip::tcp::endpoint endpoint(ip::tcp::v4(), atoi(argv[1]));
-
-    ip::tcp::acceptor acceptor_server( 
-        io_serv, endpoint); 
-
-    // smart pointer, its impossible to copy socket (it will be mess), so need to pass pointer
-    boost::shared_ptr<ip::tcp::socket> socket_ptr(new ip::tcp::socket(io_serv));
-
-    // waiting for connection 
+    if(argc != 2){
+        std::cout << "Usage `./Server some_number`" << std::endl;
+        return 0;
+    }
     try{
-        acceptor_server.accept(*socket_ptr); 
+        io_service io_serv; 
+    
+        // listening for any new incomming connection at port with IPv4 protocol 
+        ip::tcp::endpoint endpoint(ip::tcp::v4(), atoi(argv[1]));
+
+        ip::tcp::acceptor acceptor_server( 
+            io_serv, endpoint); 
+
+        ConHandler server(io_serv);
+
+        // running chat
+        acceptor_server.accept(server.get_socket()); 
+        server.run();
+
     }
     catch(std::exception e){
-        std::cout << e.what();
+        std::cout << "Closing program" << std::endl;
+        return 0;
     }
 
-    // running chat
-    ConHandler* server = new ConHandler(io_serv, socket_ptr);
-    server->run();
-    
     return 0; 
+
 } 

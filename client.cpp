@@ -4,11 +4,6 @@
 #include <algorithm>
 
 #include <boost/asio.hpp>
-#include <boost/array.hpp>
-#include <boost/bind.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/thread/thread.hpp>
-#include <boost/chrono.hpp>
 
 #include "con_handler.hpp"
 
@@ -18,19 +13,28 @@ using namespace boost::asio;
 int main(int argc, char* argv[]) 
 { 
 
-    io_service io_service; 
-    boost::shared_ptr<ip::tcp::socket> socket_ptr(new ip::tcp::socket(io_service));
+    if(argc != 2){
+        std::cout << "Usage `./Server some_number`" << std::endl;
+        return 0;
+    }
     
-    // connecting 
-    socket_ptr->
-        connect( 
-            ip::tcp::endpoint( 
-                ip::address::from_string("127.0.0.1"), 
-                atoi(argv[1]))); 
-  
-    // running chat
-    ConHandler* client = new ConHandler(io_service, socket_ptr);
-    client->run();
+    try{
+    io_service io_service; 
+    ConHandler client(io_service);
+    
+        // connecting 
+        client.get_socket()
+            .connect( 
+                ip::tcp::endpoint( 
+                    ip::address::from_string("127.0.0.1"), 
+                    atoi(argv[1]))); 
+        // running chat
+        client.run();
+    }
+    catch(std::exception e){
+        std::cout << "Closing program" << std::endl;
+        return 0;
+    }
 
     return 0; 
 } 
