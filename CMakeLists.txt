@@ -4,10 +4,6 @@ project(NokiaMessenger)
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CSS_EXTENSION OFF)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -pthread")
 
 # Locate Boost
 find_package(Boost 1.65.1 REQUIRED COMPONENTS 
@@ -17,19 +13,50 @@ find_package(Boost 1.65.1 REQUIRED COMPONENTS
 # Locate GTest
 find_package(GTest REQUIRED)
 
+# Locate Threads
+find_package(Threads)
+
 
 if(Boost_FOUND)
-	include_directories(${Boost_INCLUDE_DIRS})
-	add_executable(ClientMessenger client.cpp)
-	target_link_libraries(ClientMessenger ${Boost_LIBRARIES})
 
-	include_directories(${Boost_INCLUDE_DIRS})
+	add_executable(ClientMessenger client.cpp)
+
 	add_executable(ServerMessenger server.cpp)
-	target_link_libraries(ServerMessenger ${Boost_LIBRARIES})
+
 endif()
 
 if(GTest_FOUND)
-	include_directories(${Boost_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
+
 	add_executable(Tester tests.cpp)
-	target_link_libraries(Tester ${Boost_LIBRARIES} ${GTEST_LIBRARIES} pthread)
+	
 endif()
+
+# target server
+target_link_directories(ServerMessenger PUBLIC
+	"$(PROJECT_BINARY_DIR)"
+	"${Boost_INCLUDE_DIRS}"
+)
+target_link_libraries(ServerMessenger PUBLIC
+	${Boost_LIBRARIES}
+	${CMAKE_THREAD_LIBS_INIT})
+
+
+# target client
+target_link_directories(ClientMessenger PUBLIC
+	"$(PROJECT_BINARY_DIR)"
+	"${Boost_INCLUDE_DIRS}"
+)
+target_link_libraries(ClientMessenger PUBLIC
+	${Boost_LIBRARIES}
+	${CMAKE_THREAD_LIBS_INIT})
+
+
+# target tester
+target_link_directories(Tester PUBLIC
+	"$(PROJECT_BINARY_DIR)"
+	"${Boost_INCLUDE_DIRS}"
+)
+target_link_libraries(Tester PUBLIC
+	${Boost_LIBRARIES}
+	${GTEST_LIBRARIES}
+	${CMAKE_THREAD_LIBS_INIT})

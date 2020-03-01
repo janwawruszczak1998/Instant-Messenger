@@ -13,9 +13,10 @@ int main(int argc, char* argv[])
 {
     // program requires 2 arguments
     if(argc != 2){
-        std::cout << "Usage `./Server some_number`" << std::endl;
+        std::cout << "Usage `./Server some_number` in terminal" << std::endl;
         return 0;
     }
+    
     try{
         io_service io_serv; 
     
@@ -26,6 +27,7 @@ int main(int argc, char* argv[])
             io_serv, endpoint); 
 
         ConHandler server(io_serv);
+
 
         // running chat
         acceptor_server.accept(server.get_socket()); 

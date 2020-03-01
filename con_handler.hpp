@@ -16,7 +16,8 @@ using namespace boost::asio;
 class ConHandler
 {
 public:
-  ConHandler(io_service& io)
+
+    ConHandler(io_service& io)
     : strand_(io),
         socket(io),
         running_flag(true) 
@@ -24,7 +25,6 @@ public:
         std::cout << "You are connected!" << std::endl
             << "To exit chat just type exit" << std::endl;
     }
-
     ~ConHandler()
     {
         strand_.get_io_service().stop();
@@ -35,7 +35,7 @@ public:
     void recive_data() { 
         streambuf buf; 
         try{
-            read_until(socket, buf, ""); 
+            read_until(socket, buf, "");
         }
         catch(std::exception e){
             return;
@@ -65,8 +65,6 @@ public:
             return;
         }
 
-        
-        
         if(message == "exit"){
             running_flag = false;
             std::cout << "User finished connection" << std::endl;
@@ -74,7 +72,6 @@ public:
             writing_thread.detach();
             reading_thread.~thread();
             writing_thread.~thread();
-            //this->~ConHandler();
         }
         
     } 

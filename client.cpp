@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 { 
     // program requires 2 arguments
     if(argc != 2){
-        std::cout << "Usage `./Server some_number`" << std::endl;
+        std::cout << "Usage `./Client some_number` in terminal" << std::endl;
         return 0;
     }
 
