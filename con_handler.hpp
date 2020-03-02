@@ -10,13 +10,15 @@
 #include <boost/asio.hpp>
 
 
+
+
 using namespace boost::asio;
 
 
 class ConHandler
 {
 public:
-
+    
     ConHandler(io_service& io)
     : strand_(io),
         socket(io),
@@ -45,6 +47,7 @@ public:
         if(data == "exit"){
             running_flag = false;
             std::cout << "User finised connection" << std::endl;
+
             reading_thread.detach();
             writing_thread.detach();
             reading_thread.~thread();
@@ -68,6 +71,7 @@ public:
         if(message == "exit"){
             running_flag = false;
             std::cout << "User finished connection" << std::endl;
+
             reading_thread.detach();
             writing_thread.detach();
             reading_thread.~thread();
