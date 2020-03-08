@@ -19,39 +19,50 @@ class ConHandler
 {
 public:
     
-    ConHandler(io_service& io)
+    ConHandler(io_service& io, ip::tcp::endpoint& endpoint, 
+    ip::tcp::socket& socket,  ip::tcp::acceptor& acceptor_server)
     : strand_(io),
-        socket(io),
+        socket_(socket),
         running_flag(true) 
     {
+        acceptor_server.accept(socket);
         std::cout << "You are connected!" << std::endl
             << "To exit chat just type exit" << std::endl;
+
+    }
+    ConHandler(io_service& io, ip::tcp::endpoint& endpoint, ip::tcp::socket& socket)
+    : strand_(io),
+        socket_(socket),
+        running_flag(true) 
+    {
+        socket_.connect(endpoint); 
+        std::cout << "You are connected!" << std::endl
+            << "To exit chat just type exit" << std::endl;
+
     }
     ~ConHandler()
     {
         strand_.get_io_service().stop();
-        socket.close();
+        socket_.close();
     }
 
     // reading using socket
     void recive_data() { 
         streambuf buf; 
         try{
-            read_until(socket, buf, "");
+            read_until(socket_, buf, "");
         }
-        catch(std::exception e){
+        catch(const std::exception& e){
+            std::cout << e.what() << std::endl;
             return;
         }
         
         data = buffer_cast<const char*>(buf.data()); 
         if(data == "exit"){
             running_flag = false;
-            std::cout << "User finised connection" << std::endl;
-
-            reading_thread.detach();
-            writing_thread.detach();
-            reading_thread.~thread();
-            writing_thread.~thread();
+            std::cout << "User finished connection" << std::endl;
+            write(socket_, 
+                buffer("exit")); 
         }
         else{
             std::cout << ": " << data << std::endl;
@@ -61,21 +72,15 @@ public:
     // writing using socket
     void send_message() { 
         try{
-            write(socket, 
-                buffer(message)); 
+            if(message == "exit"){
+                write(socket_, buffer(message)); 
+                running_flag = false;
+            }
+            else write(socket_, buffer(message));  
         }
-        catch(std::exception e){
+        catch(const std::exception& e){
+            std::cout << e.what() << std::endl;
             return;
-        }
-
-        if(message == "exit"){
-            running_flag = false;
-            std::cout << "User finished connection" << std::endl;
-
-            reading_thread.detach();
-            writing_thread.detach();
-            reading_thread.~thread();
-            writing_thread.~thread();
         }
         
     } 
@@ -107,14 +112,12 @@ public:
 
     std::string get_data(){ return data; }
     std::string get_message(){ return message; }
-    void set_message(std::string new_message){ message = new_message; }
-    ip::tcp::socket& get_socket() { return socket; }
-  
+    void set_message(std::string new_message){ message = new_message; }  
 
 
 private:
     boost::asio::io_service::strand strand_;
-    ip::tcp::socket socket;
+    ip::tcp::socket& socket_;
     std::string data, message;
 
     std::thread reading_thread;

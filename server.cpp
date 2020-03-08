@@ -19,22 +19,14 @@ int main(int argc, char* argv[])
     
     try{
         io_service io_serv; 
-    
-        // listening for any new incomming connection at port with IPv4 protocol 
+        ip::tcp::socket socket(io_serv);
         ip::tcp::endpoint endpoint(ip::tcp::v4(), atoi(argv[1]));
-
-        ip::tcp::acceptor acceptor_server( 
-            io_serv, endpoint); 
-
-        ConHandler server(io_serv);
-
-
-        // running chat
-        acceptor_server.accept(server.get_socket()); 
+        ip::tcp::acceptor acceptor_server(io_serv, endpoint);
+        // listening for any new incomming connection at port with IPv4 protocol 
+        ConHandler server(io_serv, endpoint, socket, acceptor_server); 
         server.run();
-
     }
-    catch(std::exception e){
+    catch(const std::exception& e){
         std::cout << "Closing program" << std::endl;
         return 0;
     }

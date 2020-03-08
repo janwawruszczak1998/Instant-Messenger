@@ -19,19 +19,13 @@ int main(int argc, char* argv[])
     }
 
     try{
-    io_service io_service; 
-    ConHandler client(io_service);
-    
-        // connecting 
-        client.get_socket()
-            .connect( 
-                ip::tcp::endpoint( 
-                    ip::address::from_string("127.0.0.1"), 
-                    atoi(argv[1]))); 
-        // running chat
+        io_service io_serv; 
+        ip::tcp::socket socket(io_serv);
+        ip::tcp::endpoint endpoint(ip::address::from_string("127.0.0.1"), atoi(argv[1]));
+        ConHandler client(io_serv, endpoint, socket);
         client.run();
     }
-    catch(std::exception e){
+    catch(const std::exception& e){
         std::cout << "Closing program" << std::endl;
         return 0;
     }
